@@ -139,13 +139,11 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         fetchData(0);
-        fetchTop(0);
     }
 
     @Override
     public void onRefresh() {
         fetchData(0);
-        fetchTop(0);
     }
 
     /**
@@ -174,7 +172,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                     subscriber.onError(e);
                 }
             }
-        }).delay(5500, TimeUnit.MILLISECONDS)
+        }).delay(2500, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Items>() {
@@ -199,6 +197,9 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                         mAdapter.addAll(items.data);
                         if (mAdapter.getNormalItemCount() == 0) {
                             mRecyclerView.showEmptyText(R.string.no_data);
+                            mRecyclerView.showEmptyView();
+                        } else if (sinceId == 0){
+                            fetchTop(0);
                         }
                         mRecyclerView.setRefreshing(false);
                     }
@@ -229,7 +230,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                     subscriber.onError(e);
                 }
             }
-        }).delay(8300, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.newThread())
+        }).delay(1300, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Items>() {
                     @Override
                     public void onCompleted() {
@@ -417,6 +418,11 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
             synchronized (this) {
                 return dataList.get(position);
             }
+        }
+
+        @Override
+        public boolean displayEmpty() {
+            return dataList.size() == 0;
         }
     }
 
