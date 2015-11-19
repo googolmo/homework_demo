@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">HomeWork</string>
+
+    <string name="title_hot">hot</string>
+    <string name="title_trend">trend</string>
+    <string name="title_fresh">fresh</string>
+    <string name="no_data">No Posts</string>
+
+    <string name="ultimate_default_button_text">Retry</string>
+</resources>

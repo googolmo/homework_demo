@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <declare-styleable name="UltimateRecyclerView">
+        <attr name="ur_recyclerViewPadding" format="dimension"/>
+        <attr name="ur_recyclerViewPaddingTop" format="dimension"/>
+        <attr name="ur_recyclerViewPaddingBottom" format="dimension"/>
+        <attr name="ur_recyclerViewPaddingLeft" format="dimension"/>
+        <attr name="ur_recyclerViewPaddingRight" format="dimension"/>
+        <attr name="ur_swipeRefresh" format="boolean"/>
+        <attr name="ur_recyclerViewClipToPadding" format="boolean"/>
+    </declare-styleable>
+</resources>
