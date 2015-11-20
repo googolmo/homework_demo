@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.AppCompatButton;
+import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,6 +21,7 @@ import com.bumptech.glide.Glide;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -360,6 +363,34 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
 
                 holder.image.setImage(Glide.with(holder.image.getContext()).load(item.image.url),
                         (float) item.image.width / (float) item.image.height);
+
+                holder.textInfo.setText(getString(R.string.item_info,
+                        NumberFormat.getInstance().format(item.points),
+                        NumberFormat.getInstance().format(item.comments)));
+                holder.actionShare.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //TODO click share
+                    }
+                });
+                holder.actionUp.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //TODO action up
+                    }
+                });
+                holder.actionDown.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //TODO action down
+                    }
+                });
+                holder.actionComment.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //TODO action comment
+                    }
+                });
             } else if (viewHolder instanceof AdViewHolder) {
                 AdViewHolder holder = (AdViewHolder) viewHolder;
                 //Do something for AdView
@@ -468,13 +499,24 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
 
         AppCompatTextView textTitle;
         DynamicHeightImageView image;
+        AppCompatImageButton actionUp;
+        AppCompatImageButton actionDown;
+        AppCompatImageButton actionComment;
+        AppCompatButton actionShare;
+        AppCompatTextView textInfo;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
             textTitle = (AppCompatTextView) itemView.findViewById(R.id.text_title);
             image = (DynamicHeightImageView) itemView.findViewById(R.id.image);
-
             textTitle.setGravity(GravityCompat.START | Gravity.TOP);
+
+            actionUp = (AppCompatImageButton) itemView.findViewById(R.id.action_up);
+            actionDown = (AppCompatImageButton) itemView.findViewById(R.id.action_down);
+            actionComment = (AppCompatImageButton) itemView.findViewById(R.id.action_comment);
+            actionShare = (AppCompatButton) itemView.findViewById(R.id.action_share);
+            textInfo = (AppCompatTextView) itemView.findViewById(R.id.text_info);
+            textInfo.setGravity(GravityCompat.START | Gravity.CENTER);
         }
     }
 

@@ -6,4 +6,7 @@
     <color name="black">#000000</color>
     <color name="gray">#44888888</color>
     <color name="background">#EFEFEF</color>
+    <color name="share_background_pressed">#005555</color>
+    <color name="white">#ffffff</color>
+    <color name="item_action_background_pressed">#77ffffff</color>
 </resources>

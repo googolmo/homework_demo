@@ -31,4 +31,86 @@
         android:scaleType="centerCrop"
         />
 
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/text_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        android:singleLine="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_margin="8dp"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_toLeftOf="@+id/action_share"
+            android:layout_toStartOf="@+id/action_share"
+            android:layout_centerVertical="true"
+            >
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/action_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="40dp"
+                android:minWidth="64dp"
+                android:background="@drawable/selectable_item_action_background"
+                />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/action_down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="40dp"
+                android:minWidth="64dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/selectable_item_action_background"
+                />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/action_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="40dp"
+                android:minWidth="64dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/selectable_item_action_background"
+                />
+
+        </LinearLayout>
+
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/action_share"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/share"
+            android:minWidth="72dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:background="@drawable/selectable_action_share_background"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:textColor="@color/white"
+            android:singleLine="true"
+            />
+
+    </RelativeLayout>
+
 </LinearLayout>
