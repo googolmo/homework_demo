@@ -28,6 +28,7 @@ import im.amomo.homework.R;
 import im.amomo.homework.model.Item;
 import im.amomo.homework.model.Items;
 import im.amomo.homework.util.GsonHelper;
+import im.amomo.homework.widget.AdView;
 import im.amomo.homework.widget.DividerItemDecoration;
 import im.amomo.homework.widget.DynamicHeightImageView;
 import im.amomo.homework.widget.LoadMoreRecyclerView;
@@ -41,6 +42,7 @@ import rx.schedulers.Schedulers;
 
 public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = HotFragment.class.getSimpleName();
+    private static final int AD_FREQUENCY = 15;
 
     UltimateRecyclerView mRecyclerView;
 
@@ -262,10 +264,14 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         void onFragmentInteraction(Uri uri);
     }
 
+    interface ViewTypes {
+        int TYPE_TOP = 0x0000;
+        int TYPE_NORMAL = 0x0001;
+        int TYPE_AD = 0x0010;
+    }
+
     class VerticalAdapter extends LoadMoreRecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-        static final int VIEW_TYPE_TOP = 0x0001;
-        static final int VIEW_TYPE_NORMAL = 0x0010;
         List<Item> dataList;
         private HorizontalAdapter mHorizontalAdapter;
         private View mTopView;
@@ -315,25 +321,30 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         @Override
         public RecyclerView.ViewHolder onCreateNormalViewHolder(LayoutInflater inflater,
                 ViewGroup parent, int viewType) {
-            if (viewType == VIEW_TYPE_TOP) {
+            if (viewType == ViewTypes.TYPE_TOP) {
                 mTopView = inflater.inflate(R.layout.item_vertical_top, parent, false);
                 mItemTopViewHolder = new ItemTopViewHolder(mTopView);
                 RecyclerView.LayoutManager manager = new LinearLayoutManager(parent.getContext(),
                         LinearLayoutManager.HORIZONTAL, false);
                 mItemTopViewHolder.recyclerView.setLayoutManager(manager);
                 mItemTopViewHolder.recyclerView.enableLoadMore();
-                mItemTopViewHolder.recyclerView.setOnLoadMoreListener(new LoadMoreRecyclerView.OnLoadMoreListener() {
-                    @Override
-                    public void loadMore(LoadMoreRecyclerView recyclerView, int lastPosition) {
-                        fetchTop(lastPosition);
-                    }
-                });
+                mItemTopViewHolder.recyclerView.setOnLoadMoreListener(
+                        new LoadMoreRecyclerView.OnLoadMoreListener() {
+                            @Override
+                            public void loadMore(LoadMoreRecyclerView recyclerView,
+                                    int lastPosition) {
+                                fetchTop(lastPosition);
+                            }
+                        });
 
                 mItemTopViewHolder.recyclerView.setAdapter(getHorizontalAdapter());
                 return mItemTopViewHolder;
-            } else if (viewType == VIEW_TYPE_NORMAL) {
+            } else if (viewType == ViewTypes.TYPE_NORMAL) {
                 View view = inflater.inflate(R.layout.item_vertical, parent, false);
                 return new ItemViewHolder(view);
+            } else if (viewType == ViewTypes.TYPE_AD) {
+                View view = inflater.inflate(R.layout.item_ad, parent, false);
+                return new AdViewHolder(view);
             }
             return null;
         }
@@ -349,6 +360,9 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
 
                 holder.image.setImage(Glide.with(holder.image.getContext()).load(item.image.url),
                         (float) item.image.width / (float) item.image.height);
+            } else if (viewHolder instanceof AdViewHolder) {
+                AdViewHolder holder = (AdViewHolder) viewHolder;
+                //Do something for AdView
             }
         }
 
@@ -359,14 +373,28 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
 
         @Override
         public int getNormalItemViewType(int position) {
-            if (getHorizontalAdapter().getItemCount() > 0 && position == 0) {
-                return VIEW_TYPE_TOP;
+            if (showTop() && position == 0) {
+                return ViewTypes.TYPE_TOP;
             }
-            return VIEW_TYPE_NORMAL;
+            if (isAd(position)) {
+                return ViewTypes.TYPE_AD;
+            }
+            return ViewTypes.TYPE_NORMAL;
+        }
+
+        public boolean isAd(int position) {
+            position = position - (showTop() ? 1 : 0);
+            return position != 0 && position % AD_FREQUENCY == 0;
+        }
+
+        public boolean showTop() {
+            return getHorizontalAdapter().getItemCount() > 0;
         }
 
         public Item getDataItem(int position) {
-            return dataList.get(position - (getHorizontalAdapter().getItemCount() > 0 ? 1 : 0));
+            position = position - (showTop() ? 1 : 0);
+            position = position - position / AD_FREQUENCY;
+            return dataList.get(position);
         }
 
     }
@@ -426,7 +454,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         }
     }
 
-    class ItemTopViewHolder extends RecyclerView.ViewHolder {
+    static class ItemTopViewHolder extends RecyclerView.ViewHolder {
 
         LoadMoreRecyclerView recyclerView;
 
@@ -436,7 +464,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         }
     }
 
-    class ItemViewHolder extends RecyclerView.ViewHolder {
+    static class ItemViewHolder extends RecyclerView.ViewHolder {
 
         AppCompatTextView textTitle;
         DynamicHeightImageView image;
@@ -450,7 +478,17 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         }
     }
 
-    class HorizontalItemViewHolder extends RecyclerView.ViewHolder {
+    static class AdViewHolder extends RecyclerView.ViewHolder {
+
+        AdView adView;
+
+        public AdViewHolder(View itemView) {
+            super(itemView);
+            adView = (AdView) itemView.findViewById(R.id.ad_view);
+        }
+    }
+
+    static class HorizontalItemViewHolder extends RecyclerView.ViewHolder {
 
         AppCompatTextView textTitle;
         AppCompatImageView image;

@@ -7,4 +7,5 @@
     <string name="no_data">No Posts</string>
 
     <string name="ultimate_default_button_text">Retry</string>
+    <string name="ad_text">This is an Ad!</string>
 </resources>
