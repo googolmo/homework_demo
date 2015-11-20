@@ -18,6 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.squareup.sqlbrite.BriteDatabase;
+import com.squareup.sqlbrite.SqlBrite;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import im.amomo.homework.BuildConfig;
 import im.amomo.homework.R;
+import im.amomo.homework.database.DatabaseHelper;
 import im.amomo.homework.model.Item;
 import im.amomo.homework.model.Items;
 import im.amomo.homework.util.GsonHelper;
@@ -40,6 +43,7 @@ import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 
@@ -131,7 +135,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                 if (BuildConfig.DEBUG) {
                     Log.d(TAG, "onLoadMoreListener->loadMore(" + lastPosition + ")");
                 }
-                fetchData(lastPosition);
+                fetchHot(lastPosition);
             }
         });
 
@@ -143,12 +147,12 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        fetchData(0);
+        displayHotFromDatabase();
     }
 
     @Override
     public void onRefresh() {
-        fetchData(0);
+        fetchHot(0);
     }
 
     /**
@@ -156,7 +160,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
      *
      * @param sinceId item id let backend knows which one should as the first
      */
-    private void fetchData(final long sinceId) {
+    private void fetchHot(final long sinceId) {
 
         Subscription subscription = rx.Observable.create(new Observable.OnSubscribe<Items>() {
             @Override
@@ -200,6 +204,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                             mAdapter.clear();
                         }
                         mAdapter.addAll(items.data);
+                        saveListToDatabase(Items.TABLES.HOT, items.data);
                         if (mAdapter.getNormalItemCount() == 0) {
                             mRecyclerView.showEmptyText(R.string.no_data);
                             mRecyclerView.showEmptyView();
@@ -257,10 +262,106 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                             }
                         }
                         mAdapter.addTopData(items.data);
+                        saveListToDatabase(Items.TABLES.TOP, items.data);
                     }
                 }));
 
     }
+
+    // region database
+
+    private void displayHotFromDatabase() {
+        SqlBrite sqlBrite = SqlBrite.create();
+        addSubscription(Items.query(sqlBrite.wrapDatabaseHelper(DatabaseHelper.getInstance()), Items.TABLES.HOT)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<List<Item>>() {
+                    @Override
+                    public void call(List<Item> items) {
+                        if (items.size() == 0) {
+                            fetchHot(0);
+                        } else {
+                            mAdapter.addAll(items);
+                            displayTopFromDatabase();
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, "query hot by db error!", throwable);
+                        fetchHot(0);
+                    }
+                }));
+    }
+
+    private void displayTopFromDatabase() {
+        SqlBrite brite = SqlBrite.create();
+        Subscription subscription = Items.query(brite.wrapDatabaseHelper(DatabaseHelper.getInstance()), Items.TABLES.TOP)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<List<Item>>() {
+                    @Override
+                    public void call(List<Item> items) {
+                        if (items.size() == 0) {
+                            fetchTop(0);
+                        } else {
+                            mAdapter.addTopData(items);
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, "query top by db error", throwable);
+                        fetchTop(0);
+                    }
+                });
+        addSubscription(subscription);
+    }
+
+    private void saveListToDatabase(@Items.TABLE final String table, final List<Item> list) {
+        Subscription subscription = rx.Observable
+                .create(new Observable.OnSubscribe<Boolean>() {
+                    @Override
+                    public void call(Subscriber<? super Boolean> subscriber) {
+                        if (subscriber.isUnsubscribed()) {
+                            subscriber.onCompleted();
+                            return;
+                        }
+
+                        BriteDatabase db = SqlBrite.create()
+                                .wrapDatabaseHelper(DatabaseHelper.getInstance());
+
+                        try {
+                            Items.clear(db, table);
+                            Items.save(db, table, list);
+                            if (!subscriber.isUnsubscribed()) {
+                                subscriber.onNext(true);
+                            }
+
+                        } catch (Exception e) {
+                            subscriber.onError(e);
+                        }
+                        if (!subscriber.isUnsubscribed()) {
+                            subscriber.onCompleted();
+                        }
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Boolean>() {
+                    @Override
+                    public void call(Boolean aBoolean) {
+                        Log.i(TAG, String.format("save %1$s to database successful", table));
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, String.format("save %1$s to database failed", table), throwable);
+                    }
+                });
+    }
+
+    // endregion
 
 
     public interface OnFragmentInteractionListener {
@@ -288,7 +389,8 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         public void addAll(List<Item> list) {
             synchronized (this) {
                 dataList.addAll(list);
-                notifyItemRangeInserted(getNormalItemCount() - list.size(), list.size());
+                notifyDataSetChanged();
+//                notifyItemRangeInserted(getNormalItemCount() - list.size(), list.size());
             }
         }
 
@@ -399,7 +501,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
 
         @Override
         public int getNormalItemCount() {
-            return (getHorizontalAdapter().getItemCount() > 0 ? 1 : 0) + dataList.size();
+            return (getHorizontalAdapter().getItemCount() > 0 ? 1 : 0) + dataList.size() + getAdCount();
         }
 
         @Override
@@ -411,6 +513,10 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                 return ViewTypes.TYPE_AD;
             }
             return ViewTypes.TYPE_NORMAL;
+        }
+
+        public int getAdCount() {
+            return dataList.size() / AD_FREQUENCY;
         }
 
         public boolean isAd(int position) {

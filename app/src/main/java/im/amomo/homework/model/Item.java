@@ -1,5 +1,7 @@
 package im.amomo.homework.model;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -8,6 +10,30 @@ import android.os.Parcelable;
  * Created by Moyw on 11/8/15.
  */
 public class Item implements Parcelable {
+    public static final String TABLE = "item";
+
+    public interface Columns {
+        String ID = "_id";
+        String TITLE = TABLE + "_title";
+        String URL = TABLE + "_url";
+        String IMAGE_URL = TABLE + "_image_url";
+        String IMAGE_WIDTH = TABLE + "_image_width";
+        String IMAGE_HEIGHT = TABLE + "_image_height";
+        String POINTS = TABLE + "_points";
+        String COMMENTS = TABLE + "_comments";
+    }
+
+    public static final String SQL_CREATE = "CREATE TABLE IF NOT EXISTS `" + TABLE + "` ( `" +
+            Columns.ID + "` INTEGER PRIMARY KEY, `" +
+            Columns.TITLE + "` TEXT, `" +
+            Columns.URL + "` TEXT, `" +
+            Columns.IMAGE_URL + "` TEXT, `" +
+            Columns.IMAGE_WIDTH + "` INTEGER, `" +
+            Columns.IMAGE_HEIGHT + "` INTEGER, `" +
+            Columns.POINTS + "` INTEGER, `" +
+            Columns.COMMENTS + "` INTEGER," +
+            "UNIQUE (" + Columns.ID + ") ON CONFLICT REPLACE)";
+
     public long id;
     public String title;
     public String url;
@@ -26,6 +52,28 @@ public class Item implements Parcelable {
         this.image = in.readParcelable(Image.class.getClassLoader());
         this.points = in.readInt();
         this.comments = in.readInt();
+    }
+
+    public Item(Cursor cursor) {
+        this.id = cursor.getInt(cursor.getColumnIndex(Columns.ID));
+        this.title = cursor.getString(cursor.getColumnIndex(Columns.TITLE));
+        this.url = cursor.getString(cursor.getColumnIndex(Columns.URL));
+        this.image = new Image(cursor);
+        this.points = cursor.getInt(cursor.getColumnIndex(Columns.POINTS));
+        this.comments = cursor.getInt(cursor.getColumnIndex(Columns.COMMENTS));
+    }
+
+    public ContentValues getContentValues() {
+        ContentValues cv = new ContentValues();
+        cv.put(Columns.ID, this.id);
+        cv.put(Columns.TITLE, this.title);
+        cv.put(Columns.URL, this.url);
+        cv.put(Columns.IMAGE_URL, this.image.url);
+        cv.put(Columns.IMAGE_HEIGHT, this.image.height);
+        cv.put(Columns.IMAGE_WIDTH, this.image.width);
+        cv.put(Columns.POINTS, this.points);
+        cv.put(Columns.COMMENTS, this.comments);
+        return cv;
     }
 
     @Override
@@ -65,6 +113,12 @@ public class Item implements Parcelable {
         public int height;
 
         public Image() {
+        }
+
+        public Image(Cursor cursor) {
+            this.url = cursor.getString(cursor.getColumnIndex(Columns.IMAGE_URL));
+            this.height = cursor.getInt(cursor.getColumnIndex(Columns.IMAGE_HEIGHT));
+            this.width = cursor.getInt(cursor.getColumnIndex(Columns.IMAGE_WIDTH));
         }
 
         protected Image(Parcel in) {

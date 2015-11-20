@@ -4,6 +4,10 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import com.bumptech.glide.DrawableRequestBuilder;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+
+import java.util.Locale;
 
 /**
  * Project - HomeWork_Demo
@@ -37,7 +41,6 @@ public class DynamicHeightImageView extends android.support.v7.widget.AppCompatI
         this.mHeightRatio = ratio;
     }
 
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
@@ -50,12 +53,29 @@ public class DynamicHeightImageView extends android.support.v7.widget.AppCompatI
             }
             setMeasuredDimension(width, height);
             if (mRequest != null && width > 0 && height > 0) {
-                mRequest.override(width, height)
+                mRequest.listener(mRequestListener)
+                        .override(width, height)
                         .into(this);
             }
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
 
+    }
+
+    private RequestListener mRequestListener = new LoggingListener();
+
+    // example usage: .listener(new LoggingListener<String, GlideDrawable>())
+    public class LoggingListener<T, R> implements RequestListener<T, R> {
+        @Override public boolean onException(Exception e, Object model, Target target, boolean isFirstResource) {
+            android.util.Log.d("GLIDE", String.format(Locale.ROOT,
+                    "onException(%s, %s, %s, %s)", e, model, target, isFirstResource), e);
+            return false;
+        }
+        @Override public boolean onResourceReady(Object resource, Object model, Target target, boolean isFromMemoryCache, boolean isFirstResource) {
+            android.util.Log.d("GLIDE", String.format(Locale.ROOT,
+                    "onResourceReady(%s, %s, %s, %s, %s)", resource, model, target, isFromMemoryCache, isFirstResource));
+            return false;
+        }
     }
 }

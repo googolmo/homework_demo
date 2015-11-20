@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup"
+        android:name=".App"
         >
         <activity
             android:name=".activity.MainActivity"

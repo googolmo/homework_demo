@@ -41,4 +41,5 @@ dependencies {
 
     compile 'io.reactivex:rxjava:1.0.15'
     compile 'io.reactivex:rxandroid:1.0.1'
+    compile 'com.squareup.sqlbrite:sqlbrite:0.4.1'
 }
