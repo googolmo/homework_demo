@@ -36,7 +36,7 @@ import im.amomo.homework.model.Items;
 import im.amomo.homework.util.GsonHelper;
 import im.amomo.homework.widget.AdView;
 import im.amomo.homework.widget.DividerItemDecoration;
-import im.amomo.homework.widget.DynamicHeightImageView;
+import im.amomo.homework.widget.DynamicView;
 import im.amomo.homework.widget.LoadMoreRecyclerView;
 import im.amomo.homework.widget.UltimateRecyclerView;
 import rx.Observable;
@@ -337,7 +337,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                             if (!subscriber.isUnsubscribed()) {
                                 subscriber.onNext(true);
                             }
-
+                            db.close();
                         } catch (Exception e) {
                             subscriber.onError(e);
                         }
@@ -372,6 +372,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         int TYPE_TOP = 0x0000;
         int TYPE_NORMAL = 0x0001;
         int TYPE_AD = 0x0010;
+        int TYPE_LARGE_IMAGE = 0x0011;
     }
 
     class VerticalAdapter extends LoadMoreRecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -388,9 +389,11 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
 
         public void addAll(List<Item> list) {
             synchronized (this) {
+                int adCount = getAdCount();
                 dataList.addAll(list);
-                notifyDataSetChanged();
-//                notifyItemRangeInserted(getNormalItemCount() - list.size(), list.size());
+                adCount = getAdCount() - adCount;
+//                notifyDataSetChanged();
+                notifyItemRangeInserted(getNormalItemCount() - adCount - list.size(), list.size() + adCount);
             }
         }
 
@@ -447,6 +450,9 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
             } else if (viewType == ViewTypes.TYPE_NORMAL) {
                 View view = inflater.inflate(R.layout.item_vertical, parent, false);
                 return new ItemViewHolder(view);
+            } else if (viewType == ViewTypes.TYPE_LARGE_IMAGE) {
+                View view = inflater.inflate(R.layout.item_vertical_large_image, parent, false);
+                return new ItemViewHolder(view);
             } else if (viewType == ViewTypes.TYPE_AD) {
                 View view = inflater.inflate(R.layout.item_ad, parent, false);
                 return new AdViewHolder(view);
@@ -463,8 +469,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
 
                 holder.textTitle.setText(item.title);
 
-                holder.image.setImage(Glide.with(holder.image.getContext()).load(item.image.url),
-                        (float) item.image.width / (float) item.image.height);
+                holder.image.setImage(item.image);
 
                 holder.textInfo.setText(getString(R.string.item_info,
                         NumberFormat.getInstance().format(item.points),
@@ -511,6 +516,9 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
             }
             if (isAd(position)) {
                 return ViewTypes.TYPE_AD;
+            }
+            if (getDataItem(position).image.height > 2000) {
+                return ViewTypes.TYPE_LARGE_IMAGE;
             }
             return ViewTypes.TYPE_NORMAL;
         }
@@ -604,7 +612,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
     static class ItemViewHolder extends RecyclerView.ViewHolder {
 
         AppCompatTextView textTitle;
-        DynamicHeightImageView image;
+        DynamicView image;
         AppCompatImageButton actionUp;
         AppCompatImageButton actionDown;
         AppCompatImageButton actionComment;
@@ -614,7 +622,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
         public ItemViewHolder(View itemView) {
             super(itemView);
             textTitle = (AppCompatTextView) itemView.findViewById(R.id.text_title);
-            image = (DynamicHeightImageView) itemView.findViewById(R.id.image);
+            image = (DynamicView) itemView.findViewById(R.id.image);
             textTitle.setGravity(GravityCompat.START | Gravity.TOP);
 
             actionUp = (AppCompatImageButton) itemView.findViewById(R.id.action_up);
