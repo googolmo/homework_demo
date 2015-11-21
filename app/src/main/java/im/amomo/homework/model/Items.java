@@ -97,8 +97,19 @@ public class Items {
 
     }
 
+    /**
+     * trim item table. Delete item which both no in HOT table and TOP table;
+     * @param db {@link BriteDatabase} object
+     */
     @WorkerThread
     public static void trimDatabase(@NonNull BriteDatabase db) {
-        //TODO trim database
+        int count = db.delete(Item.TABLE,
+                String.format("%1$s not in (select %2$s from %3$s) and %1$s not in (select %2$s from %4$s)",
+                        Item.Columns.ID, Columns.ITEM_ID, TABLES.HOT, TABLES.TOP));
+
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, String.format("trim item table %1$s rows affect", count));
+        }
+
     }
 }

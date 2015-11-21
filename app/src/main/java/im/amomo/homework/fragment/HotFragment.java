@@ -162,6 +162,10 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
      */
     private void fetchHot(final long sinceId) {
 
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "fetch Hot");
+        }
+
         Subscription subscription = rx.Observable.create(new Observable.OnSubscribe<Items>() {
             @Override
             public void call(Subscriber<? super Items> subscriber) {
@@ -352,11 +356,38 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                     @Override
                     public void call(Boolean aBoolean) {
                         Log.i(TAG, String.format("save %1$s to database successful", table));
+                        trimItemTable();
                     }
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         Log.e(TAG, String.format("save %1$s to database failed", table), throwable);
+                    }
+                });
+    }
+
+    private static void trimItemTable() {
+        rx.Observable.create(new Observable.OnSubscribe<Boolean>() {
+            @Override
+            public void call(Subscriber<? super Boolean> subscriber) {
+                try {
+                    Items.trimDatabase(SqlBrite.create().wrapDatabaseHelper(DatabaseHelper.getInstance()));
+                    subscriber.onNext(true);
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    subscriber.onError(e);
+                }
+            }
+        }).observeOn(Schedulers.io())
+                .subscribe(new Action1<Boolean>() {
+                    @Override
+                    public void call(Boolean aBoolean) {
+                        Log.i(TAG, "Table Item trim complete");
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, "Table Item trim failed", throwable);
                     }
                 });
     }
@@ -392,7 +423,6 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                 int adCount = getAdCount();
                 dataList.addAll(list);
                 adCount = getAdCount() - adCount;
-//                notifyDataSetChanged();
                 notifyItemRangeInserted(getNormalItemCount() - adCount - list.size(), list.size() + adCount);
             }
         }
