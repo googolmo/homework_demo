@@ -34,6 +34,7 @@ import im.amomo.homework.database.DatabaseHelper;
 import im.amomo.homework.model.Item;
 import im.amomo.homework.model.Items;
 import im.amomo.homework.util.GsonHelper;
+import im.amomo.homework.util.Utils;
 import im.amomo.homework.widget.AdView;
 import im.amomo.homework.widget.DividerItemDecoration;
 import im.amomo.homework.widget.DynamicView;
@@ -147,7 +148,11 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        displayHotFromDatabase();
+        if (Utils.isNetworkConnect(getContext().getApplicationContext())) {
+            fetchHot(0);
+        } else {
+            displayHotFromDatabase();
+        }
     }
 
     @Override
@@ -197,7 +202,7 @@ public class HotFragment extends BaseFragment implements SwipeRefreshLayout.OnRe
                     public void onError(Throwable e) {
                         Log.e(TAG, e.getMessage(), e);
                         if (mAdapter.getNormalItemCount() == 0) {
-                            mRecyclerView.showEmptyText(R.string.no_data);
+                            mRecyclerView.showEmptyText(e.getMessage());
                         }
                         mRecyclerView.setRefreshing(false);
                     }
