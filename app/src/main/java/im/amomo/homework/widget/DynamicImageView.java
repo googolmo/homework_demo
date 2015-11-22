@@ -57,7 +57,8 @@ public class DynamicImageView extends AppCompatImageView implements DynamicView 
             }
             setMeasuredDimension(width, height);
             if (mRequest != null)  {
-                mRequest.into(this);
+                mRequest.override(width, height)
+                        .into(this);
             }
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
