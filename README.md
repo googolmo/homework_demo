@@ -10,7 +10,7 @@
 
 		This is a view for efficiently displaying large data sets by providing a limited window of data items.
 
-2. com.google.code.gson:gson:2.
+2. com.google.code.gson:gson:2.4
 
 		This library for deserialize json data
 
@@ -25,6 +25,14 @@
 5. rxjava and rxandroid
 
         A library for composing asynchronous and event-based programs using observable sequences
+
+6. sqlbrite
+
+        A library for read or write database
+
+7. com.davemorrissey.labs:subsampling-scale-image-view:3.4.1
+
+        A library for rendering a long height image
 
 ### About this project
 
@@ -44,8 +52,9 @@
 
 4. widget
 
-        There are three views for this project, AutoLoadRecyclerView provide a Listener to handle loadmore order, DynamicHeightImageView.java for display image use provided ratio, DividerItemDecoration.java is a decoration for RecyclerView to diplay divier line.
+        There are three views for this project, LoadMoreRecyclerView provide a Listener to handle loadmore order, UltimaRecyclerView provide to display EmptyView, DynamicHeightImageView.java for display image use provided ratio, DividerItemDecoration.java is a decoration for RecyclerView to diplay divier line.
 
 5. util
 
         GsonHelper.class provide a singleton gson object;
+        Utils.class
